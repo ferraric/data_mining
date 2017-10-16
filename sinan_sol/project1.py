@@ -37,16 +37,23 @@ m = 480
 t = pow(1/b,1/r)
 
 # single matrix
-shMatrix = np.zeros(shape=(700,N+1))
+shMatrix = np.zeros(shape=(700,N))
 
 def compare_sim(v1,v2):
     countSame = 0
+    countDiff = 0
     doc1 = shMatrix[v1]
     doc2 = shMatrix[v2]
-    for i in range(N+1):
-        if doc1[i] == doc2[i]:
+    for i in range(N):
+        if doc1[i] == 1 and doc2[i] == 1:
             countSame = countSame + 1
-    return float(countSame) / (N+1)
+            countDiff = countDiff + 1
+        elif (doc1[i] == 1 and doc2[i] == 0) or (doc1[i] == 0 and doc2[i] == 1):
+            countDiff = countDiff + 1
+    if countDiff == 0:
+        return 0
+    else:
+        return float(countSame) / countDiff
 
 # hash functions for lsh hashing
 a_array2 = np.zeros(b*r)
@@ -67,7 +74,7 @@ def mapper(key, value):
     pageNr = int(''.join(pageNr))
 
     # build our shingle matrix, or rather one column of it
-    ShM = np.zeros(N+1)
+    ShM = np.zeros(N)
 
     for shingle in values:
         # when observing a shingle, set correspondig matrix entry to 1
@@ -80,7 +87,7 @@ def mapper(key, value):
     # column of signature Matrix, initialized to inf
     SigM = np.full(k,np.inf)
     # do min hashing with k hash funtions, see "implementing min-hashing" slide
-    for i in range(N+1):
+    for i in range(N):
         if ShM[i] == 1:
             for j in range(k):
                 SigM[j] = np.minimum(SigM[j], hash(i,a_array[j],b_array[j],N,p1))
@@ -113,4 +120,5 @@ def reducer(key, values):
     for p in pairs:
         if p[0] != p[1]:
             if compare_sim(p[0],p[1]) > t:
-                yield p[0], p[1]
+                if p[0] < p[1]:
+                    yield p[0], p[1]
