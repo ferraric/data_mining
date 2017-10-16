@@ -11,8 +11,8 @@ import numpy as np
 
 # number of rows of the shingle matrix
 N = 8192
-# number of row of the signature matrix
-k = 64
+# number of row of the signature matrix (number of hash functions for min-hashing)
+k = 16
 # those hold the parameters for the hashfunctions used in the min hashing step
 a_array = np.zeros(k)
 b_array = np.zeros(k)
@@ -24,14 +24,14 @@ def hash(x,a,b,n,p):
 # our prime used for min-hashing
 p1 = 8209
 # our prime used for lsh
-p2 = 401
+p2 = 503
 
 # partition signature matrix into b bands of r rows each
-b = 8
-r = 8
+b = 4
+r = 4
 
-# number of buckets
-m = 400
+# number of buckets (for lsh)
+m = 500
 
 # threshold
 t = 0.85
