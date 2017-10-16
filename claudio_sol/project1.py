@@ -95,7 +95,6 @@ def reducer(key, values):
     
     # as described above, we report all pairs in values
     
-    counter = 0
     for v1 in values:
         for v2 in values:
             if v1 < v2:
