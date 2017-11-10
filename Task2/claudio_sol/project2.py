@@ -1,24 +1,25 @@
 import numpy as np
 
+# m is the number of dimensions in our final representation
+m = 1000
+# d is the number of input dimensions
+d = 400
+
+# draw m samples from p(omega), and b
+b = np.random.uniform(0,2*np.pi,m)
+# every row is one sample
+omega = np.random.multivariate_normal(np.zeros(d),np.identity(d),m)
+
 def transform(X):
     # Make sure this function works for both 1D and 2D NumPy arrays.
-
-    # m is the number of dimensions in our final representation
-    m = 1000
-    # d is the number of input dimensions
-    d = 400
-
-    # draw m samples from p(omega), and b
-    b = np.random.uniform(0,2*np.pi,m)
-    # every row is one sample
-    omega = np.random.multivariate_normal(np.zeros(d),np.identity(d),m)
 
     if X.ndim == 1:
         X_new = np.zeros(m)
         for j in range(m):
-            X_new[j] = np.cos(np.dot(omega[j,:],X[i])+b[j])
+            X_new[j] = np.cos(np.dot(omega[j,:],X)+b[j])
         X_new = np.sqrt(2/m)*X_new
         print("GOTCHA!")
+
     elif X.ndim ==2:
         n = X.shape[0]
 
@@ -40,10 +41,6 @@ def mapper(key, value):
     # key: None
     # value: one line of input file
 
-    # m is the number of dimensions in our final representation
-    m = 1000
-    # d is the number of input dimensions
-    d = 400
     images = value
     n = len(images)
     # numpy matrix to hold our values
@@ -56,7 +53,7 @@ def mapper(key, value):
         X [i,:] = features
         i += 1
 
-    X_new = transform(X);
+    X_new = transform(X)
     #initialize w
     w = np.zeros(m)
     # regularization parameter
@@ -64,6 +61,7 @@ def mapper(key, value):
 
     # generate random permutation of 1..n
     perm = np.random.permutation(n)
+
     stepsize = 1
     t = 1
     for i in perm:
@@ -72,7 +70,7 @@ def mapper(key, value):
         if y[i]*np.dot(w,X_new[i,:]) >= 1:
             w = w - stepsize/n * w
         else:
-            w = w - stepsize *(w*1/n-C*y[i]*X_new[i,:])
+            w = w - stepsize*(w*1/n-C*y[i]*X_new[i,:])
 
 
     yield "key", w  # This is how you yield a key, value pair
