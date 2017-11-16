@@ -11,8 +11,9 @@ sqr = np.sqrt(2.0 / m)
 b = np.random.uniform(0,2.0*np.pi,m).astype('float32')
 # every row is one sample
 #omega = np.random.multivariate_normal(np.zeros(d),np.identity(d),m)
-#omega = np.random.laplace(size=(m,d)).astype('float32')
-omega = np.random.exponential(scale=1,size=(m,d))
+omega = np.random.laplace(size=(m,d)).astype('float32')
+#omega = np.random.standard_t(df=2, size=(m, d)).astype('float32')
+#omega = np.random.exponential(scale=1,size=(m,d))
 #omega = np.random.standard_cauchy(size=(m,d))
 
 
@@ -25,6 +26,21 @@ def fourier_transform(x):
     return fourier_feature.astype('float32')
 
 def transform(X):
+    # n = X.shape[0]
+    # if X.ndim == 1:
+    #     X_new = np.zeros(2*d)
+    #     for i in range(d):
+    #             X_new[i] = X[i]
+    #             X_new[d+i] = X[i]*X[i]
+    # else:
+    #     X_new = np.zeros((n,2*d))
+    #     for j in range(n):
+    #         for i in range(d):
+    #             X_new[j,i] = X[j,i]
+    #             X_new[j,d+i] = X[j,i]*X[j,i]
+    #
+    # return X_new
+
     if len(X.shape) == 1:
         return fourier_transform(X)
     else:
@@ -69,14 +85,14 @@ def mapper(key, value):
     w = np.zeros(m)
 
     # regularization parameter
-    C = 100
+    C = 10
 
     stepsize = 1.0
     t = 1.0
     for d in data:
         y = d[0]
         x = transform(d[1:])
-        stepsize = 2/np.sqrt(t)
+        stepsize = 2.0/np.sqrt(2*t)
         t += 1.0
         if y*np.dot(w,x) >= 1:
             w = w - stepsize/n * w
