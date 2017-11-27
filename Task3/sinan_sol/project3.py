@@ -68,8 +68,18 @@ def reducer(key, values):
             stepsize = 1.0
         elif c > 10:
             stepsize = 0.5
-        else:
+        elif c > 7:
+            stepsize = 0.2
+        elif c > 6:
             stepsize = 0.1
+        elif c > 5.5:
+            stepsize = 0.075
+        elif c > 5:
+            stepsize = 0.05
+        elif c > 4:
+            stepsize = 0.03
+        else:
+            stepsize = 0.01
         result[min_index,:] += stepsize*(temp - result[min_index,:])
     end = time.time()
     print("Reducer time: " + str(end-start))
