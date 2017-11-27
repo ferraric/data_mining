@@ -43,23 +43,31 @@ def reducer(key, values):
     # Note that we do *not* output a (key, value) pair here.
     start = time.time()
     np.random.shuffle(values)
-    # number of centers from the mapper
+    # number of images
     k = values.shape[0]
     # array containing 200 centers for initialization of the result
     result = np.random.randn(nr_total_centers,feature_dimension)
+    # fixed stepsize
     stepsize = 0.5
-    # loop over all center array and do online k-means with the centers
+    # loop over all images and do online k-means
     for i in range(k):
-        # get the next center array
+        # get the next image
         temp = values[i,:]
+        # initialize parameters (min distance and that index)
         c = np.inf
-        min_dist = 0
         min_index = 0
+        # find index of center which is closest to image
         for j in range(nr_total_centers):
             dist = np.linalg.norm(result[j,:] - temp)
             if dist < c:
                 c = dist
                 min_index = j
+        print(c)
+        # weigh higher distances more than lower ones
+        if c > 50:
+            stepsize = 1.0
+        else:
+            stepsize = 0.5
         result[min_index,:] += stepsize*(temp - result[min_index,:])
     end = time.time()
     print("Reducer time: " + str(end-start))
