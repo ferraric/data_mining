@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-nr_centers_per_round = 2500
+nr_centers_per_round = 1000
 nr_total_centers = 200
 feature_dimension = 250
 
@@ -12,7 +12,6 @@ def mapper(key, value):
     # value: one line of input file
     start = time.time()
     # initialize the centers randomly from normal distribution
-    # centers = np.random.multivariate_normal(np.zeros(feature_dimension),np.ones(feature_dimension,feature_dimension),nr_centers)
     centers = np.random.randn(nr_centers_per_round,feature_dimension)
     # get number of images provided to mapper
     nr_images = value.shape[0]
@@ -27,14 +26,15 @@ def mapper(key, value):
         for j in range(nr_centers_per_round):
             dist = np.linalg.norm(centers[j,:]-im)
             if dist < c:
-                min_dist = dist
+                c = dist
                 min_index = j
-        stepsize = min_dist / t
+        stepsize = c / t
         centers[min_index,:] += stepsize*(im - centers[min_index,:])
         t += 1.0
     end = time.time()
     print("Mapper time: " + str(end-start))
     yield "key", centers
+
 
 
 def reducer(key, values):
@@ -57,9 +57,9 @@ def reducer(key, values):
         for j in range(nr_total_centers):
             dist = np.linalg.norm(result[j,:] - temp)
             if dist < c:
-                min_dist = dist
+                c = dist
                 min_index = j
-        stepsize = min_dist / t
+        stepsize = c / t
         result[min_index,:] += stepsize*(temp - result[min_index,:])
         t += 1.0
     end = time.time()
