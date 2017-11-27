@@ -1,8 +1,11 @@
 import numpy as np
 import time
 
-nr_centers = 200
+nr_centers_per_round = 2500
+nr_total_centers = 200
 feature_dimension = 250
+
+distance_threshold = 20
 
 def mapper(key, value):
     # key: None
@@ -10,37 +13,55 @@ def mapper(key, value):
     start = time.time()
     # initialize the centers randomly from normal distribution
     # centers = np.random.multivariate_normal(np.zeros(feature_dimension),np.ones(feature_dimension,feature_dimension),nr_centers)
-    centers = np.random.randn(200,250)
+    centers = np.random.randn(nr_centers_per_round,feature_dimension)
     # get number of images provided to mapper
     nr_images = value.shape[0]
+    t = 1.0
     #do online k-means
     for i in range(nr_images):
         im = value[i,:]
         # check which center is closest
         c = np.inf
         min_dist = 0
-        for j in range(nr_centers):
+        min_index = 0
+        for j in range(nr_centers_per_round):
             dist = np.linalg.norm(centers[j,:]-im)
             if dist < c:
                 min_dist = dist
                 min_index = j
-        stepsize = min_dist / (i+1)
+        stepsize = min_dist / t
         centers[min_index,:] += stepsize*(im - centers[min_index,:])
-
+        t += 1.0
     end = time.time()
     print("Mapper time: " + str(end-start))
-    yield "key", centers  # this is how you yield a key, value pair
+    yield "key", centers
 
 
 def reducer(key, values):
     # key: key from mapper used to aggregate
     # values: list of all value for that key
     # Note that we do *not* output a (key, value) pair here.
-
-    # k = values.shape[0]
-    # result = np.zeros((200,250))
-    # for centers in values:
-    #     result += centers
-    # result /= k
-    # yield result
-    yield values
+    start = time.time()
+    # number of centers from the mapper
+    k = values.shape[0]
+    # array containing 200 centers for initialization of the result
+    result = np.random.randn(nr_total_centers,feature_dimension)
+    t = 1.0
+    # loop over all center array and do online k-means with the centers
+    for i in range(k):
+        # get the next center array
+        temp = values[i,:]
+        c = np.inf
+        min_dist = 0
+        min_index = 0
+        for j in range(nr_total_centers):
+            dist = np.linalg.norm(result[j,:] - temp)
+            if dist < c:
+                min_dist = dist
+                min_index = j
+        stepsize = min_dist / t
+        result[min_index,:] += stepsize*(temp - result[min_index,:])
+        t += 1.0
+    end = time.time()
+    print("Reducer time: " + str(end-start))
+    yield result
