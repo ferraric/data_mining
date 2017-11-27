@@ -64,10 +64,12 @@ def reducer(key, values):
                 min_index = j
         print(c)
         # weigh higher distances more than lower ones
-        if c > 50:
+        if c > 100:
             stepsize = 1.0
-        else:
+        elif c > 10:
             stepsize = 0.5
+        else:
+            stepsize = 0.1
         result[min_index,:] += stepsize*(temp - result[min_index,:])
     end = time.time()
     print("Reducer time: " + str(end-start))
