@@ -45,10 +45,9 @@ def reducer(key, values):
     np.random.shuffle(values)
     # number of images
     k = values.shape[0]
+    t = 1.0
     # array containing 200 centers for initialization of the result
     result = np.random.randn(nr_total_centers,feature_dimension)
-    # fixed stepsize
-    stepsize = 0.5
     # loop over all images and do online k-means
     for i in range(k):
         # get the next image
@@ -64,23 +63,26 @@ def reducer(key, values):
                 min_index = j
         print(c)
         # weigh higher distances more than lower ones
-        if c > 100:
+        if c > 10:
             stepsize = 1.0
-        elif c > 10:
-            stepsize = 0.5
-        elif c > 7:
-            stepsize = 0.2
-        elif c > 6:
-            stepsize = 0.1
-        elif c > 5.5:
-            stepsize = 0.075
-        elif c > 5:
-            stepsize = 0.05
-        elif c > 4:
-            stepsize = 0.03
+        # elif c > 10:
+        #     stepsize = 0.5
+        # elif c > 7:
+        #     stepsize = 0.25
+        # elif c > 6:
+        #     stepsize = 0.2
+        # elif c > 5.5:
+        #     stepsize = 0.15
+        # elif c > 5:
+        #     stepsize = 0.1
+        # elif c > 4.5:
+        #     stepsize = 0.05
+        # elif c > 4:
+        #     stepsize = 0.01
         else:
-            stepsize = 0.01
+            stepsize = 1.0 / t
         result[min_index,:] += stepsize*(temp - result[min_index,:])
+        t += 0.005
     end = time.time()
     print("Reducer time: " + str(end-start))
     yield result
