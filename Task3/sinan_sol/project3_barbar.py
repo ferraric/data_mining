@@ -53,11 +53,11 @@ def reducer(key, values):
     # counting acquired centers
     r = 1
     # oversampling factor and nr of iterations (we get about l*n centers)
-    n = 30
-    l = 2
+    n = 20
+    l = 5
     # start k-means|| (initialization)
     start_barbar = time.time()
-    for i in range(30):
+    for i in range(n):
         print(r)
         print("start" + str(i))
         for j in range(k):
