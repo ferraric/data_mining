@@ -43,7 +43,7 @@ def reducer(key, values):
     # number of images
     k = values.shape[0]
     # array containing 200 centers for initialization of the result (random)
-    result = np.random.randn(nr_total_centers,feature_dimension)
+    result = np.zeros((nr_total_centers,feature_dimension))
     # pick the first center randomly (shuffled)
     result[0,:] = values[0,:]
     # D holds the distances from datapoints to closest center
@@ -53,13 +53,12 @@ def reducer(key, values):
     # counting acquired centers
     r = 1
     # oversampling factor and nr of iterations (we get about l*n centers)
-    n = 20
+    n = 22
     l = 5
     # start k-means|| (initialization)
     start_barbar = time.time()
     for i in range(n):
-        print(r)
-        print("start" + str(i))
+        print("start " + str(i))
         for j in range(k):
             # go through the dataset
             c = np.inf

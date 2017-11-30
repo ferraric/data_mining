@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-nr_centers_per_round = 25
+nr_centers_per_round = 200
 nr_total_centers = 200
 feature_dimension = 250
 
@@ -23,7 +23,7 @@ def mapper(key, value):
     # counting acquired centers
     r = 1
     # oversampling factor and nr of iterations (we get about l*n centers)
-    n = 10
+    n = 22
     l = 5
     # start k-means|| (initialization)
     start_barbar = time.time()
@@ -70,7 +70,7 @@ def reducer(key, values):
     k = values.shape[0]
     # number of images per mapper
     l = values[0][1].shape[0]
-    center_list = np.zeros((k*nr_total_centers,feature_dimension))
+    center_list = np.zeros((k*nr_centers_per_round,feature_dimension))
     dataset = np.zeros((k*l,feature_dimension))
     #
     result = np.zeros((nr_total_centers,feature_dimension))
@@ -80,23 +80,23 @@ def reducer(key, values):
         dataset[i*l:(i+1)*l,:] = values[i][1]
     # array containing 200 centers for the result
     z = center_list.shape[0]
-    w = np.zeros(z)
-    # loop over the images and find the closest center for the weighting
-    for i in range(k*l):
-        start_weights = time.time()
-        minimum = np.inf
-        min_ind = 0
-        for j in range(z):
-            distance = np.linalg.norm(dataset[i,:] - center_list[j,:])
-            if distance < minimum:
-                minimum = distance
-                min_ind = j
-        w[min_ind] += 1
-        end_weights = time.time()
-        print(str(i) + "-th datapoint visited. Time: " + str(end_weights-start_weights))
-    p = w / np.sum(w)
-    for i in range(nr_total_centers):
-        result[i,:] = center_list[np.random.choice(range(z),1,False,p),:]
+    # w = np.zeros(z)
+    # # loop over the images and find the closest center for the weighting
+    # for i in range(k*l):
+    #     start_weights = time.time()
+    #     minimum = np.inf
+    #     min_ind = 0
+    #     for j in range(z):
+    #         distance = np.linalg.norm(dataset[i,:] - center_list[j,:])
+    #         if distance < minimum:
+    #             minimum = distance
+    #             min_ind = j
+    #     w[min_ind] += 1
+    #     end_weights = time.time()
+    #     print(str(i) + "-th datapoint visited. Time: " + str(end_weights-start_weights))
+    # p = w / np.sum(w)
+    np.random.shuffle(center_list)
+    result = center_list[:200,:]
 
 
     # begin online k-means
@@ -118,6 +118,8 @@ def reducer(key, values):
         # weigh higher distances more than lower ones
         if c > 10:
             stepsize = 1.0
+        elif c == 0:
+            stepsize = 0.0
         else:
             stepsize = 1.0 / t
         result[min_index,:] += stepsize*(temp - result[min_index,:])
