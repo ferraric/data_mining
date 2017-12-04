@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from scipy.cluster.vq import kmeans
 
 nr_total_centers = 200
 feature_dimension = 250
@@ -59,32 +60,33 @@ def reducer(key, values):
         if r == nr_total_centers:
             break
     end_barbar = time.time()
-    print(r)
     print("Initialization done. Time: " + str((end_barbar-start_barbar)/60.0))
+    # do kmeans from scipy
+    final_result = kmeans(values,result,iter=20)
     # begin online k-means
-    t = 1.0
-    # loop over all images and do online k-means
-    for i in range(k):
-        # get the next image
-        temp = values[i,:]
-        # initialize parameters (min distance and that index)
-        c = np.inf
-        min_index = 0
-        # find index of center which is closest to image
-        for j in range(nr_total_centers):
-            dist = np.linalg.norm(result[j,:] - temp)
-            if dist < c:
-                c = dist
-                min_index = j
-        # weigh higher distances more than lower ones
-        if c > 10 and i < k*l-6000:
-            stepsize = 1.0
-        elif c == 0:
-            continue
-        else:
-            stepsize = 1.0 / t
-        result[min_index,:] += stepsize*(temp - result[min_index,:])
-        t += 0.003
+    # t = 1.0
+    # # loop over all images and do online k-means
+    # for i in range(k):
+    #     # get the next image
+    #     temp = values[i,:]
+    #     # initialize parameters (min distance and that index)
+    #     c = np.inf
+    #     min_index = 0
+    #     # find index of center which is closest to image
+    #     for j in range(nr_total_centers):
+    #         dist = np.linalg.norm(result[j,:] - temp)
+    #         if dist < c:
+    #             c = dist
+    #             min_index = j
+    #     # weigh higher distances more than lower ones
+    #     if c > 10 and i < k*l-6000:
+    #         stepsize = 0.9
+    #     elif c == 0:
+    #         continue
+    #     else:
+    #         stepsize = 1.0 / t
+    #     result[min_index,:] += stepsize*(temp - result[min_index,:])
+    #     t += 0.003
     end = time.time()
     print("Reducer time: " + str((end-start)/60.0))
-    yield result
+    yield final_result[0]
