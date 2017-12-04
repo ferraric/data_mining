@@ -8,27 +8,29 @@ feature_dimension = 250
 def mapper(key, value):
     # key: None
     # value: one line of input file
+    #start = time.time()
     np.random.shuffle(value)
-    start = time.time()
     # number of images
     k = value.shape[0]
     # array containing 200 centers for the result
-    centers = np.random.randn(nr_centers_per_round,feature_dimension)
+    centers = np.zeros((nr_centers_per_round,feature_dimension))
     # pick the first center randomly (shuffled)
     centers[0,:] = value[0,:]
     # D holds the distances from datapoints to closest center
     D = np.zeros(k)
     # psi is the sum of distances from the centers (sum of values in D)
     psi = 0
+    # for i in range(k):
+    #     D[i] = np.linalg.norm(centers[0,:] - value[i,:])**2
+    # psi = np.sum(D)
     # counting acquired centers
     r = 1
     # oversampling factor and nr of iterations (we get about l*n centers)
-    n = 22
+    n = 21
     l = 5
     # start k-means|| (initialization)
-    start_barbar = time.time()
     for i in range(n):
-        print("start " + str(i))
+        # print("start " + str(i))
         for j in range(k):
             # go through the dataset
             c = np.inf
@@ -48,15 +50,8 @@ def mapper(key, value):
             if ind <= l*D[i]/psi:
                 centers[r,:] = value[i,:]
                 r += 1
-                if r == nr_centers_per_round:
-                    break
-        if r == nr_centers_per_round:
-            break
-    print(r)
-    end_barbar = time.time()
-    print("Initialization done. Time: " + str(end_barbar-start_barbar))
-    end = time.time()
-    print("Mapper time: " + str((end-start)/60.0))
+    #end = time.time()
+    #print("Mapper time: " + str((end-start)/60.0))
     yield "key", (centers,value)
 
 
@@ -65,7 +60,7 @@ def reducer(key, values):
     # key: key from mapper used to aggregate
     # values: list of all value for that key
     # Note that we do *not* output a (key, value) pair here.
-    start = time.time()
+    #start = time.time()
     # number of mapper rounds
     k = values.shape[0]
     # number of images per mapper
@@ -80,21 +75,6 @@ def reducer(key, values):
         dataset[i*l:(i+1)*l,:] = values[i][1]
     # array containing 200 centers for the result
     z = center_list.shape[0]
-    # w = np.zeros(z)
-    # # loop over the images and find the closest center for the weighting
-    # for i in range(k*l):
-    #     start_weights = time.time()
-    #     minimum = np.inf
-    #     min_ind = 0
-    #     for j in range(z):
-    #         distance = np.linalg.norm(dataset[i,:] - center_list[j,:])
-    #         if distance < minimum:
-    #             minimum = distance
-    #             min_ind = j
-    #     w[min_ind] += 1
-    #     end_weights = time.time()
-    #     print(str(i) + "-th datapoint visited. Time: " + str(end_weights-start_weights))
-    # p = w / np.sum(w)
     np.random.shuffle(center_list)
     result = center_list[:200,:]
 
@@ -114,16 +94,16 @@ def reducer(key, values):
             if dist < c:
                 c = dist
                 min_index = j
-        print(c)
+        # print(c)
         # weigh higher distances more than lower ones
-        if c > 10:
+        if c > 10 and i < k*l-6000:
             stepsize = 1.0
-        elif c == 0:
-            stepsize = 0.0
+        elif c == 0 or c > 10:
+            continue
         else:
             stepsize = 1.0 / t
         result[min_index,:] += stepsize*(temp - result[min_index,:])
         t += 0.003
-    end = time.time()
-    print("Reducer time: " + str((end-start)/60.0))
+    #end = time.time()
+    #print("Reducer time: " + str((end-start)/60.0))
     yield result
