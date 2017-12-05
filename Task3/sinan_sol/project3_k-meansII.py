@@ -21,7 +21,7 @@ def reducer(key, values):
     k = values.shape[0]
     # array containing 200 centers for initialization of the result (random)
     result = np.zeros((nr_total_centers,feature_dimension))
-    # pick the first center randomly (shuffled)
+    # pick the first center as mean of datapoints
     result[0,:] = np.sum(values,axis=0) / k
     # D holds the distances from datapoints to closest center
     D = np.zeros(k)
@@ -61,8 +61,8 @@ def reducer(key, values):
             break
     end_barbar = time.time()
     print("Initialization done. Time: " + str((end_barbar-start_barbar)/60.0))
-    # do kmeans from scipy
-    final_result = kmeans(values,result,iter=20)
+    # do kmeans from scipy with initial centers
+    final_result = kmeans(values,result)
     # begin online k-means
     # t = 1.0
     # # loop over all images and do online k-means
