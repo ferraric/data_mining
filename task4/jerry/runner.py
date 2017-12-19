@@ -29,8 +29,11 @@ import numpy as np
 import resource
 import signal
 import sys
+import time
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+print("start")
+start = time.time()
 
 
 def process_line(policy, logline):
@@ -47,6 +50,7 @@ def process_line(policy, logline):
 
 
 def evaluate(policy, input_generator):
+    global start
     score = 0.0
     impressions = 0.0
     n_lines = 0.0
@@ -75,6 +79,8 @@ def evaluate(policy, input_generator):
     else:
         score /= impressions
         logger.info("CTR achieved by the policy: %.5f" % score)
+        end = time.time()
+        print("runtime: " + str(end-start))
         return score
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def set_articles(articles):
     pass
 
